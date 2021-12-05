@@ -25,10 +25,20 @@ public class NetworkedClient : MonoBehaviour
 
     int ourClientID;
 
+    GameObject gameSystemManager;
+
     // Start is called before the first frame update
     void Start()
     {
-        Connect();
+        GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
+        foreach (GameObject go in allObjects)
+        {
+           if( go.GetComponent<GameSystemManager>() != null)
+            {
+                gameSystemManager = go;
+            }
+        }
+            Connect();
     }
 
     // Update is called once per frame
@@ -113,6 +123,16 @@ public class NetworkedClient : MonoBehaviour
     private void ProcessRecievedMsg(string msg, int id)
     {
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
+       string[] csv = msg.Split(',');
+        int signifier = int.Parse(csv[0]);
+        if(signifier == ServerToClientSignifiers.AcountCreation)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.MainMenu);
+        }
+        if (signifier == ServerToClientSignifiers.LoginComplete)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.MainMenu);
+        }
     }
 
     public bool IsConnected()
