@@ -8,13 +8,21 @@ public class NetworkedClient : MonoBehaviour
 {
 
     int connectionID;
+
     int maxConnections = 1000;
+
     int reliableChannelID;
+
     int unreliableChannelID;
+
     int hostID;
+
     int socketPort = 5491;
+
     byte error;
+
     bool isConnected = false;
+
     int ourClientID;
 
     // Start is called before the first frame update
@@ -79,7 +87,7 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "192.168.2.37", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, "192.168.2.95", socketPort, 0, out error); // server is local on network
 
             if (error == 0)
             {
@@ -114,3 +122,33 @@ public class NetworkedClient : MonoBehaviour
 
 
 }
+public static class ClientToServerSignifiers {
+
+    public const int CreateAccount = 1;
+
+    public const int Login = 2;
+
+
+
+
+
+}
+
+public static class ServerToClientSignifiers
+{
+
+    public const int LoginComplete = 1;
+
+    public const int LoginFailed = 2;
+
+    public const int AcountCreation = 3;
+
+    public const int AcountCreationFailed = 4;
+
+
+
+
+}
+
+
+
