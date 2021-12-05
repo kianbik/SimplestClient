@@ -97,7 +97,7 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "192.168.2.95", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, "70.51.69.211", socketPort, 0, out error); // server is local on network
 
             if (error == 0)
             {
@@ -129,7 +129,7 @@ public class NetworkedClient : MonoBehaviour
         {
             gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.MainMenu);
         }
-        if (signifier == ServerToClientSignifiers.LoginComplete)
+       else if (signifier == ServerToClientSignifiers.LoginComplete)
         {
             gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.MainMenu);
         }
