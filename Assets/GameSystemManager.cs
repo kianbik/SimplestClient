@@ -11,6 +11,8 @@ public class GameSystemManager : MonoBehaviour
     GameObject networkClient;
     GameObject joinGameRoom;
 
+
+    GameObject gameRoomButton, observerButton, titleText,loginCanvas, ticTacToeCanvas, mainMenuCanvas, roomNumInput, leaveRoomButton;
     //static GameObject instance;
 
 
@@ -23,6 +25,8 @@ public class GameSystemManager : MonoBehaviour
         GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
         foreach (GameObject go in allObjects)
         {
+            if (go.name == "LoginCanvas")
+                loginCanvas = go;
             if (go.name == "UserNameInputField")
                 userNameInput = go;
             else if (go.name == "PasswordInputField")
@@ -37,6 +41,20 @@ public class GameSystemManager : MonoBehaviour
                 networkClient = go;
             else if (go.name == "JoinGameRoom")
                 joinGameRoom = go;
+            else if (go.name == "GameRoomButton")
+                gameRoomButton = go;
+            else if (go.name == "Panel Title")
+                titleText = go;
+            else if (go.name == "TicTacToeCanvas")
+                ticTacToeCanvas = go;
+            else if (go.name == "Log MainMenuCanvas Window")
+                mainMenuCanvas = go;
+            else if (go.name == "ObserverButton")
+                observerButton = go;
+            else if (go.name == "RoomNumInputField")
+                roomNumInput = go;
+            else if (go.name == "LeaveRoomButton")
+                leaveRoomButton = go;
 
         }
 
@@ -46,6 +64,9 @@ public class GameSystemManager : MonoBehaviour
        
         createToggle.GetComponent<Toggle>().onValueChanged.AddListener(CreateToggleChanged);
 
+        observerButton.GetComponent<Button>().onClick.AddListener(GameRoomAsObserverButtonPressed);
+
+        leaveRoomButton.GetComponent<Button>().onClick.AddListener(LeaveRoomButtonPressed);
         ChangeState(GameStates.LoginMenu);
 
 
@@ -86,7 +107,36 @@ public class GameSystemManager : MonoBehaviour
         logInToggle.GetComponent<Toggle>().SetIsOnWithoutNotify(!newValue);
     }
 
+    private void GameRoomButtonPressed()
+    {
+        networkClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.JoinGameRoomQueue + "");
+        ChangeState(GameStates.WaitingInQueue);
+    }
+    private void GameRoomAsObserverButtonPressed()
+    {
+        InputField input = roomNumInput.GetComponent<InputField>();
+        string roomNum = input.textComponent.text;
 
+        if (roomNum == "")
+        {
+            networkClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.JoinAnyRoomAsObserver + "");
+        }
+        else if (int.TryParse(roomNum, out int temp))
+        {
+            networkClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.JoinSpecificRoomAsObserver + "," + roomNum);
+        }
+
+        input.text = "";
+    }
+
+    void LeaveRoomButtonPressed()
+    {
+        if (ticTacToeCanvas.activeInHierarchy && ticTacToeCanvas.GetComponent<TicTacToeManager>().CanLeave() == false)
+            networkClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.EndingTheGame + "," + "Opponent Left Early");
+
+        networkClient.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.LeaveTheRoom + "");
+        ChangeState(GameStates.MainMenu);
+    }
 
     public void ChangeState(int newState)
     {
@@ -97,26 +147,41 @@ public class GameSystemManager : MonoBehaviour
         createToggle.SetActive(false);
         logInToggle.SetActive(false);
         joinGameRoom.SetActive(false);
+        ticTacToeCanvas.SetActive(false);
+        gameRoomButton.SetActive(false);
+        titleText.SetActive(false);
+        observerButton.SetActive(false);
+        roomNumInput.SetActive(false);
+        leaveRoomButton.SetActive(false);
+        mainMenuCanvas.SetActive(false);
+
 
         if (newState == GameStates.LoginMenu)
         {
+            loginCanvas.SetActive(true);
             submitButton.SetActive(true);
             userNameInput.SetActive(true);
             passwordInput.SetActive(true);
             createToggle.SetActive(true);
             logInToggle.SetActive(true);
+
         }
         else if(newState == GameStates.MainMenu)
         {
+            mainMenuCanvas.SetActive(true);
             joinGameRoom.SetActive(true);
+            observerButton.SetActive(true);
+            roomNumInput.SetActive(true);
         }
         else if (newState == GameStates.WaitingInQueue)
         {
-
+            leaveRoomButton.SetActive(true);
         }
         else if(newState == GameStates.TicTacToe)
         {
-             
+            ticTacToeCanvas.SetActive(true);
+            ticTacToeCanvas.GetComponent<TicTacToeManager>().SetNetworkConnection(networkClient.GetComponent<NetworkedClient>());
+            leaveRoomButton.SetActive(true);
         }
     }
 }

@@ -25,7 +25,7 @@ public class NetworkedClient : MonoBehaviour
 
     int ourClientID;
 
-    GameObject gameSystemManager;
+    GameObject gameSystemManager, TicTacToeManager;
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +37,10 @@ public class NetworkedClient : MonoBehaviour
             {
                 gameSystemManager = go;
             }
+            if (go.GetComponent<TicTacToeManager>() != null)
+            {
+                TicTacToeManager = go;
+            }
         }
             Connect();
     }
@@ -44,9 +48,6 @@ public class NetworkedClient : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.S))
-            SendMessageToHost("Hello from client");
-
         UpdateNetworkConnection();
     }
 
@@ -133,6 +134,44 @@ public class NetworkedClient : MonoBehaviour
         {
             gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.MainMenu);
         }
+        else if (signifier == ServerToClientSignifiers.ChosenAsPlayerOne)
+        {
+            TicTacToeManager.GetComponent<TicTacToeManager>().ChosenAsPlayerOne();
+        }
+        else if (signifier == ServerToClientSignifiers.OpponentChoseASquare)
+        {
+            TicTacToeManager.GetComponent<TicTacToeManager>().OpponentTookTurn(int.Parse(csv[1]));
+        }
+        else if (signifier == ServerToClientSignifiers.GameIsOver)
+        {
+            TicTacToeManager.GetComponent<TicTacToeManager>().OnGameOver(csv[1]);
+        }
+      
+        else if (signifier == ServerToClientSignifiers.EnteredGameRoomAsObserver)
+        { // passes signifier, room number, then csv of all the turns so far
+            TicTacToeManager ticTackToe = TicTacToeManager.GetComponent<TicTacToeManager>();
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.TicTacToe);
+            ticTackToe.SetRoomNumberText(csv[1]);
+
+            string[] takenSquares = new string[csv.Length - 2];
+
+            for (int i = 2; i < csv.Length; i++)
+            {
+                takenSquares[i - 2] = csv[i];
+            }
+
+            ticTackToe.EnterGameAsObserver(takenSquares);
+        }
+        else if (signifier == ServerToClientSignifiers.TurnData)
+        {
+            string[] turns = new string[csv.Length - 1];
+
+            for (int i = 1; i < csv.Length; i++)
+            {
+                turns[i - 1] = csv[i];
+            }
+            TicTacToeManager.GetComponent<TicTacToeManager>().SetTurns(turns);
+        }
     }
 
     public bool IsConnected()
@@ -148,8 +187,15 @@ public static class ClientToServerSignifiers {
 
     public const int Login = 2;
 
+    public const int JoinGameRoomQueue = 3;
 
+    public const int SelectedTicTacToeSquare = 4;
+    public const int JoinAnyRoomAsObserver = 5;
+    public const int JoinSpecificRoomAsObserver = 6;
+    public const int EndingTheGame = 7;
+    public const int LeaveTheRoom = 8;
 
+    public const int RequestTurnData = 9;
 
 
 }
@@ -165,7 +211,15 @@ public static class ServerToClientSignifiers
 
     public const int AcountCreationFailed = 4;
 
+    public const int GameStart = 5;
 
+    public const int ChosenAsPlayerOne = 6;
+    public const int OpponentChoseASquare = 7;
+
+    public const int GameIsOver = 8;
+
+    public const int TurnData = 9;
+    public const int EnteredGameRoomAsObserver = 10;
 
 
 }
