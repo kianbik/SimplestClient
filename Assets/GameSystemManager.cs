@@ -12,7 +12,7 @@ public class GameSystemManager : MonoBehaviour
     GameObject joinGameRoom;
 
 
-    GameObject gameRoomButton, observerButton, titleText,loginCanvas, ticTacToeCanvas, mainMenuCanvas, roomNumInput, leaveRoomButton;
+    GameObject gameRoomButton, observerButton, titleText,loginCanvas, ticTacToeCanvas, mainMenuCanvas, roomNumInput, leaveRoomButton,gameTable;
     //static GameObject instance;
 
 
@@ -47,7 +47,7 @@ public class GameSystemManager : MonoBehaviour
                 titleText = go;
             else if (go.name == "TicTacToeCanvas")
                 ticTacToeCanvas = go;
-            else if (go.name == "Log MainMenuCanvas Window")
+            else if (go.name == "MainMenuCanvas")
                 mainMenuCanvas = go;
             else if (go.name == "ObserverButton")
                 observerButton = go;
@@ -55,6 +55,8 @@ public class GameSystemManager : MonoBehaviour
                 roomNumInput = go;
             else if (go.name == "LeaveRoomButton")
                 leaveRoomButton = go;
+            else if (go.name == "GameTable")
+                gameTable = go;
 
         }
 
@@ -65,8 +67,12 @@ public class GameSystemManager : MonoBehaviour
         createToggle.GetComponent<Toggle>().onValueChanged.AddListener(CreateToggleChanged);
 
         observerButton.GetComponent<Button>().onClick.AddListener(GameRoomAsObserverButtonPressed);
+        gameRoomButton.GetComponent<Button>().onClick.AddListener(GameRoomButtonPressed);
+        joinGameRoom.GetComponent<Button>().onClick.AddListener(GameRoomButtonPressed);
+        
 
         leaveRoomButton.GetComponent<Button>().onClick.AddListener(LeaveRoomButtonPressed);
+
         ChangeState(GameStates.LoginMenu);
 
 
@@ -147,13 +153,14 @@ public class GameSystemManager : MonoBehaviour
         createToggle.SetActive(false);
         logInToggle.SetActive(false);
         joinGameRoom.SetActive(false);
-        ticTacToeCanvas.SetActive(false);
+       
         gameRoomButton.SetActive(false);
         titleText.SetActive(false);
         observerButton.SetActive(false);
         roomNumInput.SetActive(false);
         leaveRoomButton.SetActive(false);
         mainMenuCanvas.SetActive(false);
+        gameTable.SetActive(false);
 
 
         if (newState == GameStates.LoginMenu)
@@ -176,10 +183,12 @@ public class GameSystemManager : MonoBehaviour
         else if (newState == GameStates.WaitingInQueue)
         {
             leaveRoomButton.SetActive(true);
+            gameTable.SetActive(true);
+            ticTacToeCanvas.GetComponent<TicTacToeManager>().SetNetworkConnection(networkClient.GetComponent<NetworkedClient>());
         }
         else if(newState == GameStates.TicTacToe)
         {
-            ticTacToeCanvas.SetActive(true);
+            gameTable.SetActive(true);
             ticTacToeCanvas.GetComponent<TicTacToeManager>().SetNetworkConnection(networkClient.GetComponent<NetworkedClient>());
             leaveRoomButton.SetActive(true);
         }

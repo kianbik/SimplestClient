@@ -52,9 +52,9 @@ public class TicTacToeManager : MonoBehaviour
                 turnIndicator = go;
             else if (go.name == "CharacterSelection")
                 characterSelection = go;
-            else if (go.name == "X Button")
+            else if (go.name == "XButton")
                 xButton = go;
-            else if (go.name == "O Button")
+            else if (go.name == "OButton")
                 oButton = go;
             else if (go.name == "RoomNumberText")
                 roomNumber = go;
@@ -75,15 +75,17 @@ public class TicTacToeManager : MonoBehaviour
     private void OnTicTacToeSquarePressed(SquareBehaviour square)
     {
         if (playerIcon == "" || !isPlayersTurn) //player hasn't picked their symbol yet or it isn't their turn, they cant claim a square yet
+        {
+            Debug.Log("Money");
             return;
-
+        }
         isPlayersTurn = false;
         turnIndicator.GetComponent<Text>().text = "It's your opponent's turn";
 
         square.squarePicked(playerIcon, true);
         if (connectionToHost != null)
             connectionToHost.SendMessageToHost(ClientToServerSignifiers.SelectedTicTacToeSquare + "," + square.ID);
-
+        Debug.Log("HEllo");
         CheckForWin(square.row, square.column);
         CheckForTie();
     }
@@ -173,16 +175,19 @@ public class TicTacToeManager : MonoBehaviour
         {
             playerIcon = symbol;
             opponentIcon = "O";
+            Debug.Log("X selected");
         }
         else if (symbol == "O")
         {
             playerIcon = symbol;
             opponentIcon = "X";
+            Debug.Log("O selected");
         }
         playerSymbol.GetComponent<Text>().text = "You Are: " + symbol;
         opponentSymbol.GetComponent<Text>().text = "Opponent is: " + opponentIcon;
 
-        characterSelection.SetActive(false);
+        oButton.SetActive(false);
+        xButton.SetActive(false);
         turnIndicator.SetActive(true);
 
         //check if the other player made a choice before your icons were set

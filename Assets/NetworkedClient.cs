@@ -30,17 +30,21 @@ public class NetworkedClient : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+       
         GameObject[] allObjects = UnityEngine.Object.FindObjectsOfType<GameObject>();
         foreach (GameObject go in allObjects)
         {
            if( go.GetComponent<GameSystemManager>() != null)
             {
                 gameSystemManager = go;
+                
             }
             if (go.GetComponent<TicTacToeManager>() != null)
             {
                 TicTacToeManager = go;
+               
             }
+    
         }
             Connect();
     }
@@ -72,7 +76,7 @@ public class NetworkedClient : MonoBehaviour
                 case NetworkEventType.DataEvent:
                     string msg = Encoding.Unicode.GetString(recBuffer, 0, dataSize);
                     ProcessRecievedMsg(msg, recConnectionID);
-                    //Debug.Log("got msg = " + msg);
+                    Debug.Log("got msg = " + msg);
                     break;
                 case NetworkEventType.DisconnectEvent:
                     isConnected = false;
@@ -98,7 +102,7 @@ public class NetworkedClient : MonoBehaviour
             hostID = NetworkTransport.AddHost(topology, 0);
             Debug.Log("Socket open.  Host ID = " + hostID);
 
-            connectionID = NetworkTransport.Connect(hostID, "70.51.69.211", socketPort, 0, out error); // server is local on network
+            connectionID = NetworkTransport.Connect(hostID, "10.0.0.176", socketPort, 0, out error); // server is local on network
 
             if (error == 0)
             {
@@ -126,13 +130,19 @@ public class NetworkedClient : MonoBehaviour
         Debug.Log("msg recieved = " + msg + ".  connection id = " + id);
        string[] csv = msg.Split(',');
         int signifier = int.Parse(csv[0]);
-        if(signifier == ServerToClientSignifiers.AcountCreation)
+        if(signifier == ServerToClientSignifiers.AccountCreated)
         {
             gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.MainMenu);
         }
        else if (signifier == ServerToClientSignifiers.LoginComplete)
         {
             gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.MainMenu);
+        }
+        else if (signifier == ServerToClientSignifiers.GameStart)
+        {
+            gameSystemManager.GetComponent<GameSystemManager>().ChangeState(GameStates.TicTacToe);
+            TicTacToeManager.GetComponent<TicTacToeManager>().ChangeState(TicTacToeStates.Game);
+            TicTacToeManager.GetComponent<TicTacToeManager>().SetRoomNumberText(csv[1]);
         }
         else if (signifier == ServerToClientSignifiers.ChosenAsPlayerOne)
         {
@@ -184,18 +194,20 @@ public class NetworkedClient : MonoBehaviour
 public static class ClientToServerSignifiers {
 
     public const int CreateAccount = 1;
-
     public const int Login = 2;
-
     public const int JoinGameRoomQueue = 3;
 
     public const int SelectedTicTacToeSquare = 4;
-    public const int JoinAnyRoomAsObserver = 5;
-    public const int JoinSpecificRoomAsObserver = 6;
-    public const int EndingTheGame = 7;
-    public const int LeaveTheRoom = 8;
 
-    public const int RequestTurnData = 9;
+    public const int ChatLogMessage = 8;
+
+    public const int JoinAnyRoomAsObserver = 9;
+    public const int JoinSpecificRoomAsObserver = 10;
+
+    public const int EndingTheGame = 11;
+    public const int LeaveTheRoom = 12;
+
+    public const int RequestTurnData = 14;
 
 
 }
@@ -204,24 +216,23 @@ public static class ServerToClientSignifiers
 {
 
     public const int LoginComplete = 1;
-
     public const int LoginFailed = 2;
 
-    public const int AcountCreation = 3;
-
-    public const int AcountCreationFailed = 4;
+    public const int AccountCreated = 3;
+    public const int AccountCreationFailed = 4;
 
     public const int GameStart = 5;
 
     public const int ChosenAsPlayerOne = 6;
     public const int OpponentChoseASquare = 7;
 
-    public const int GameIsOver = 8;
+    public const int ChatLogMessage = 11;
 
-    public const int TurnData = 9;
-    public const int EnteredGameRoomAsObserver = 10;
+    public const int EnteredGameRoomAsObserver = 12;
 
+    public const int GameIsOver = 13;
 
+    public const int TurnData = 14;
 }
 
 
