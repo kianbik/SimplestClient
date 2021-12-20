@@ -76,7 +76,7 @@ public class TicTacToeManager : MonoBehaviour
     {
         if (playerIcon == "" || !isPlayersTurn) //player hasn't picked their symbol yet or it isn't their turn, they cant claim a square yet
         {
-            Debug.Log("Money");
+            
             return;
         }
         isPlayersTurn = false;
@@ -85,7 +85,7 @@ public class TicTacToeManager : MonoBehaviour
         square.squarePicked(playerIcon, true);
         if (connectionToHost != null)
             connectionToHost.SendMessageToHost(ClientToServerSignifiers.SelectedTicTacToeSquare + "," + square.ID);
-        Debug.Log("HEllo");
+       
         CheckForWin(square.row, square.column);
         CheckForTie();
     }
@@ -230,7 +230,7 @@ public class TicTacToeManager : MonoBehaviour
     public void SetRoomNumberText(string RoomNumber)
     {
         this.rn = int.Parse(RoomNumber);
-        roomNumber.GetComponent<Text>().text = "Room: " + roomNumber;
+        roomNumber.GetComponent<Text>().text = "Room: " + rn;
     }
     public void EnterGameAsObserver(string[] csv_TurnsSoFar)
     {
@@ -311,7 +311,7 @@ public class TicTacToeManager : MonoBehaviour
         }
         else if (state == TicTacToeStates.GameOver)
         {
-            connectionToHost.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.RequestTurnData + "," + roomNumber);
+            connectionToHost.GetComponent<NetworkedClient>().SendMessageToHost(ClientToServerSignifiers.RequestTurnData + "," + rn);
             isGameOver = true;
             turnIndicator.SetActive(true);
             //enable replay 
